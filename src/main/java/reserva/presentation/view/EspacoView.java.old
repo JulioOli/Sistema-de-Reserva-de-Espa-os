@@ -1,0 +1,251 @@
+package reserva.presentation.view;
+
+import reserva.presentation.EspacoController;
+import reserva.domain.model.Espaco;
+import java.util.List;
+import java.util.Scanner;
+
+/**
+ * Interface de usuário para gerenciamento de Espaços
+ * Implementa as telas para RF01 e RF02
+ */
+public class EspacoView {
+    
+    private final EspacoController controller;
+    private final Scanner scanner;
+    
+    public EspacoView(EspacoController controller) {
+        this.controller = controller;
+        this.scanner = new Scanner(System.in);
+    }
+    
+    /**
+     * Menu principal de gerenciamento de espaços
+     */
+    public void exibirMenu() {
+        int opcao;
+        do {
+            System.out.println("\n=== SISTEMA DE RESERVA DE ESPAÇOS ===");
+            System.out.println("1. Cadastrar Espaço (RF01)");
+            System.out.println("2. Atualizar Espaço (RF01)");
+            System.out.println("3. Remover Espaço (RF01)");
+            System.out.println("4. Consultar Espaço (RF02)");
+            System.out.println("5. Listar Todos os Espaços Ativos (RF02)");
+            System.out.println("6. Buscar por Tipo (RF02)");
+            System.out.println("7. Buscar por Capacidade (RF02)");
+            System.out.println("0. Sair");
+            System.out.print("Escolha uma opção: ");
+            
+            opcao = scanner.nextInt();
+            scanner.nextLine(); // Limpar buffer
+            
+            switch (opcao) {
+                case 1:
+                    cadastrarEspaco();
+                    break;
+                case 2:
+                    atualizarEspaco();
+                    break;
+                case 3:
+                    removerEspaco();
+                    break;
+                case 4:
+                    consultarEspaco();
+                    break;
+                case 5:
+                    listarEspacos();
+                    break;
+                case 6:
+                    buscarPorTipo();
+                    break;
+                case 7:
+                    buscarPorCapacidade();
+                    break;
+                case 0:
+                    System.out.println("Encerrando...");
+                    break;
+                default:
+                    System.out.println("Opção inválida!");
+            }
+        } while (opcao != 0);
+    }
+    
+    /**
+     * RF01 - Tela para cadastrar espaço
+     */
+    private void cadastrarEspaco() {
+        System.out.println("\n--- CADASTRAR ESPAÇO ---");
+        
+        System.out.print("Código: ");
+        String codigo = scanner.nextLine();
+        
+        System.out.print("Nome: ");
+        String nome = scanner.nextLine();
+        
+        System.out.print("Tipo (sala/laboratório/auditório): ");
+        String tipo = scanner.nextLine();
+        
+        System.out.print("Capacidade: ");
+        int capacidade = scanner.nextInt();
+        scanner.nextLine();
+        
+        System.out.print("Localização: ");
+        String localizacao = scanner.nextLine();
+        
+        System.out.print("Descrição: ");
+        String descricao = scanner.nextLine();
+        
+        String resultado = controller.cadastrarEspaco(codigo, nome, tipo, capacidade, localizacao, descricao);
+        System.out.println(resultado);
+    }
+    
+    /**
+     * RF01 - Tela para atualizar espaço
+     */
+    private void atualizarEspaco() {
+        System.out.println("\n--- ATUALIZAR ESPAÇO ---");
+        
+        System.out.print("Código do espaço: ");
+        String codigo = scanner.nextLine();
+        
+        Espaco espaco = controller.consultarEspaco(codigo);
+        if (espaco == null) {
+            System.out.println("Espaço não encontrado!");
+            return;
+        }
+        
+        System.out.println("Dados atuais: " + espaco);
+        System.out.println("Digite os novos dados (deixe em branco para manter):");
+        
+        System.out.print("Nome [" + espaco.getNome() + "]: ");
+        String nome = scanner.nextLine();
+        if (!nome.isEmpty()) espaco.setNome(nome);
+        
+        System.out.print("Tipo [" + espaco.getTipo() + "]: ");
+        String tipo = scanner.nextLine();
+        if (!tipo.isEmpty()) espaco.setTipo(tipo);
+        
+        System.out.print("Capacidade [" + espaco.getCapacidade() + "]: ");
+        String capacidadeStr = scanner.nextLine();
+        if (!capacidadeStr.isEmpty()) {
+            espaco.setCapacidade(Integer.parseInt(capacidadeStr));
+        }
+        
+        System.out.print("Localização [" + espaco.getLocalizacao() + "]: ");
+        String localizacao = scanner.nextLine();
+        if (!localizacao.isEmpty()) espaco.setLocalizacao(localizacao);
+        
+        System.out.print("Descrição [" + espaco.getDescricao() + "]: ");
+        String descricao = scanner.nextLine();
+        if (!descricao.isEmpty()) espaco.setDescricao(descricao);
+        
+        String resultado = controller.atualizarEspaco(espaco);
+        System.out.println(resultado);
+    }
+    
+    /**
+     * RF01 - Tela para remover espaço
+     */
+    private void removerEspaco() {
+        System.out.println("\n--- REMOVER ESPAÇO ---");
+        
+        System.out.print("Código do espaço: ");
+        String codigo = scanner.nextLine();
+        
+        String resultado = controller.removerEspaco(codigo);
+        System.out.println(resultado);
+    }
+    
+    /**
+     * RF02 - Tela para consultar espaço
+     */
+    private void consultarEspaco() {
+        System.out.println("\n--- CONSULTAR ESPAÇO ---");
+        
+        System.out.print("Código do espaço: ");
+        String codigo = scanner.nextLine();
+        
+        Espaco espaco = controller.consultarEspaco(codigo);
+        if (espaco != null) {
+            exibirDetalhesEspaco(espaco);
+        } else {
+            System.out.println("Espaço não encontrado!");
+        }
+    }
+    
+    /**
+     * RF02 - Tela para listar todos os espaços
+     */
+    private void listarEspacos() {
+        System.out.println("\n--- ESPAÇOS ATIVOS ---");
+        
+        List<Espaco> espacos = controller.listarEspacosAtivos();
+        if (espacos.isEmpty()) {
+            System.out.println("Nenhum espaço cadastrado.");
+        } else {
+            espacos.forEach(this::exibirResumoEspaco);
+        }
+    }
+    
+    /**
+     * RF02 - Tela para buscar por tipo
+     */
+    private void buscarPorTipo() {
+        System.out.println("\n--- BUSCAR POR TIPO ---");
+        
+        System.out.print("Tipo: ");
+        String tipo = scanner.nextLine();
+        
+        List<Espaco> espacos = controller.buscarPorTipo(tipo);
+        if (espacos.isEmpty()) {
+            System.out.println("Nenhum espaço encontrado.");
+        } else {
+            espacos.forEach(this::exibirResumoEspaco);
+        }
+    }
+    
+    /**
+     * RF02 - Tela para buscar por capacidade
+     */
+    private void buscarPorCapacidade() {
+        System.out.println("\n--- BUSCAR POR CAPACIDADE ---");
+        
+        System.out.print("Capacidade mínima: ");
+        int capacidade = scanner.nextInt();
+        scanner.nextLine();
+        
+        List<Espaco> espacos = controller.buscarPorCapacidade(capacidade);
+        if (espacos.isEmpty()) {
+            System.out.println("Nenhum espaço encontrado.");
+        } else {
+            espacos.forEach(this::exibirResumoEspaco);
+        }
+    }
+    
+    /**
+     * Exibe detalhes completos de um espaço
+     */
+    private void exibirDetalhesEspaco(Espaco espaco) {
+        System.out.println("\n--- DETALHES DO ESPAÇO ---");
+        System.out.println("Código: " + espaco.getCodigo());
+        System.out.println("Nome: " + espaco.getNome());
+        System.out.println("Tipo: " + espaco.getTipo());
+        System.out.println("Capacidade: " + espaco.getCapacidade() + " pessoas");
+        System.out.println("Localização: " + espaco.getLocalizacao());
+        System.out.println("Descrição: " + (espaco.getDescricao() != null ? espaco.getDescricao() : "N/A"));
+        System.out.println("Status: " + (espaco.isAtivo() ? "Ativo" : "Inativo"));
+    }
+    
+    /**
+     * Exibe resumo de um espaço
+     */
+    private void exibirResumoEspaco(Espaco espaco) {
+        System.out.printf("%s - %s | Tipo: %s | Capacidade: %d | Local: %s%n",
+                espaco.getCodigo(),
+                espaco.getNome(),
+                espaco.getTipo(),
+                espaco.getCapacidade(),
+                espaco.getLocalizacao());
+    }
+}
+
